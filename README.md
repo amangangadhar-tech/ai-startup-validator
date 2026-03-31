@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="Phase3_Dashboard.png" alt="AI Startup Idea Validator Dashboard" width="800"/>
   <h1>🚀 AI Startup Idea Validator</h1>
   <p><strong>A full-stack, AI-powered orchestrator to validate and analyze startup ideas in real-time.</strong></p>
 </div>
