@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="new_dashboard_mockup.png" alt="AI Startup Idea Validator Dashboard" width="800"/>
+  <img src="Screenshot_1-4-2026_04847_localhost.jpeg" alt="AI Startup Idea Validator Dashboard" width="800"/>
   <h1>🚀 AI Startup Idea Validator</h1>
   <p><strong>A full-stack, AI-powered orchestrator to validate and analyze startup ideas in real-time.</strong></p>
 </div>
