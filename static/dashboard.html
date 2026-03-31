@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Startup Idea Validator</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --muted-text: #94a3b8;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --orange: #f97316;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Top Input Section */
+        .input-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        button {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4);
+        }
+
+        button:disabled {
+            background: var(--border-color);
+            color: var(--muted-text);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: var(--muted-text);
+            font-size: 13px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            color: var(--primary);
+            opacity: 1;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .progress-step.done {
+            color: var(--success);
+            opacity: 1;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 999px;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* 3-Column Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-top: 32px;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .muted { color: var(--muted-text); }
+        .mb-4 { margin-bottom: 16px; }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--border-color);
+            color: #e2e8f0;
+            margin: 0 6px 6px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .badge.risk { 
+            background: rgba(239, 68, 68, 0.15); 
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Value pairs */
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-row:last-child { border-bottom: none; }
+        .data-label { color: var(--muted-text); font-size: 14px; }
+        .data-value { font-weight: 600; font-size: 15px; text-align: right; }
+
+        /* Tables & Lists */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th { color: var(--muted-text); font-weight: 600; text-transform: uppercase; font-size: 12px; }
+        tbody tr { transition: background-color 0.2s; }
+        tbody tr:hover { background-color: rgba(255,255,255,0.02); }
+
+        ul {
+            padding-left: 20px;
+            margin-top: 8px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        li { margin-bottom: 6px; }
+        li::marker { color: var(--primary); }
+
+        /* Scoring UI */
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-top: 16px;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            border: 8px solid var(--border-color);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 0 20px rgba(0,0,0,0.1);
+            transition: all 0.5s ease-out;
+        }
+
+        .verdict-badge {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .history-card { margin-top: 32px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 AI Startup Idea Validator</h1>
+    
+    <div class="card">
+        <div class="input-group">
+            <input type="text" id="ideaInput" placeholder="Describe your startup idea (e.g., 'Uber for dog walkers with real-time tracking')..." autocomplete="off">
+            <button id="validateBtn" onclick="startValidation()">Validate Idea</button>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-steps" id="progressSteps">
+                <div class="progress-step" id="step-queued">Queued</div>
+                <div class="progress-step" id="step-market">Analysing Market</div>
+                <div class="progress-step" id="step-competitors">Finding Competitors</div>
+                <div class="progress-step" id="step-viability">Scoring Viability</div>
+                <div class="progress-step" id="step-done">Done</div>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Market Trends -->
+        <div class="card">
+            <h2>📈 Market Trends</h2>
+            <div id="marketContent">
+                <p class="muted" style="text-align: center; margin-top: 40px;">Awaiting analysis...<br><small>This takes ~15-30s</small></p>
+            </div>
+        </div>
+
+        <!-- Competitors -->
+        <div class="card">
+            <h2>🏁 Competitors</h2>
+            <div id="competitorContent">
+                <p class="muted" style="text-align: center; margin-top: 40px;">Awaiting analysis...<br><small>Scanning competitive landscape</small></p>
+            </div>
+        </div>
+
+        <!-- Viability Score -->
+        <div class="card">
+            <h2>🎯 Viability Score</h2>
+            <div id="viabilityContent">
+                <p class="muted" style="text-align: center; margin-top: 40px;">Awaiting analysis...<br><small>Evaluating viability metrics</small></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="card history-card">
+        <h2>🕒 Recent Validations</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 200px">Date</th>
+                        <th>Idea</th>
+                        <th style="width: 120px; text-align: center;">Status</th>
+                        <th style="width: 120px; text-align: center;">Verify</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr><td colspan="4" class="muted" style="text-align: center;">Loading history...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let radarChart = null;
+    let eventSource = null;
+
+    // Load History
+    async function loadHistory() {
+        try {
+            const res = await fetch('/history');
+            const data = await res.json();
+            const tbody = document.getElementById('historyTableBody');
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="muted" style="text-align: center;">No history found. Validate an idea to get started.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(row => {
+                const dateStr = new Date(row.created_at).toLocaleString();
+                const truncIdea = row.idea.length > 80 ? row.idea.substring(0, 80) + '...' : row.idea;
+                
+                let statusColor = 'var(--muted-text)';
+                if (row.status === 'done') statusColor = 'var(--success)';
+                if (row.status === 'error') statusColor = 'var(--danger)';
+                if (row.status === 'processing') statusColor = 'var(--primary)';
+                
+                return `
+                    <tr>
+                        <td class="muted" style="font-size: 13px;">${dateStr}</td>
+                        <td style="font-weight: 500;">${truncIdea}</td>
+                        <td style="text-align: center;"><span style="color: ${statusColor}; font-weight: 600; text-transform: capitalize;">${row.status}</span></td>
+                        <td style="text-align: center;">
+                            ${row.status === 'done' ? `<button onclick="loadIdea('${row.id}')" style="padding: 6px 12px; font-size: 12px; border-radius: 6px; background: transparent; border: 1px solid var(--border-color); color: var(--text-color);">View</button>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error("Failed to load history:", err);
+            document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="4" class="muted" style="text-align: center; color: var(--danger);">Failed to load history data.</td></tr>';
+        }
+    }
+
+    window.onload = loadHistory;
+
+    // Load a specific idea into dashboard (optional enhancement)
+    async function loadIdea(job_id) {
+        try {
+            const res = await fetch(`/results/${job_id}`);
+            const data = await res.json();
+            
+            document.getElementById('ideaInput').value = data.idea || "Loaded idea...";
+            
+            if (data.market) renderMarket(typeof data.market === 'string' ? JSON.parse(data.market) : data.market);
+            if (data.competitors) renderCompetitors(typeof data.competitors === 'string' ? JSON.parse(data.competitors) : data.competitors);
+            if (data.viability) renderViability(typeof data.viability === 'string' ? JSON.parse(data.viability) : data.viability);
+            
+            updateProgress('done');
+            document.getElementById('progressContainer').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) {
+            console.error(e);
+            alert("Could not load details for this idea.");
+        }
+    }
+
+    const stages = ['queued', 'market', 'competitors', 'viability', 'done'];
+    const fillWidths = { 'queued': 5, 'market': 30, 'competitors': 65, 'viability': 90, 'done': 100 };
+
+    function updateProgress(stage) {
+        if (!stages.includes(stage)) return;
+        
+        const currentIndex = stages.indexOf(stage);
+        
+        stages.forEach((s, idx) => {
+            const el = document.getElementById(`step-${s}`);
+            if (el) {
+                el.classList.remove('active', 'done');
+                if (idx < currentIndex) {
+                    el.classList.add('done');
+                } else if (idx === currentIndex) {
+                    el.classList.add('active');
+                }
+            }
+        });
+        
+        const fill = document.getElementById('progressFill');
+        if (fill) fill.style.width = fillWidths[stage] + '%';
+    }
+
+    async function startValidation() {
+        const input = document.getElementById('ideaInput');
+        const btn = document.getElementById('validateBtn');
+        const idea = input.value.trim();
+        if (!idea) {
+            alert("Please enter a startup idea first.");
+            return;
+        }
+
+        // Reset UI
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Validating...';
+        input.disabled = true;
+        
+        document.getElementById('progressContainer').style.display = 'block';
+        updateProgress('queued');
+        
+        const loadingHtml = '<div style="display: flex; justify-content: center; align-items: center; height: 150px;"><div style="width: 30px; height: 30px; border: 3px solid var(--border-color); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div></div><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>';
+        document.getElementById('marketContent').innerHTML = loadingHtml;
+        document.getElementById('competitorContent').innerHTML = loadingHtml;
+        document.getElementById('viabilityContent').innerHTML = loadingHtml;
+        if (radarChart) radarChart.destroy();
+
+        try {
+            const res = await fetch('/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idea })
+            });
+            
+            if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+            const data = await res.json();
+            const job_id = data.job_id;
+            
+            if (!job_id) throw new Error("No job_id returned");
+
+            // Connect to server-sent events for this job
+            eventSource = new EventSource(`/stream/${job_id}`);
+            
+            let marketDone = false;
+            let competitorsDone = false;
+            let viabilityDone = false;
+
+            eventSource.onmessage = (event) => {
+                const streamData = JSON.parse(event.data);
+                console.log("SSE Event Data:", streamData);
+                
+                // Track state transitions explicitly based on data presence
+                if (streamData.status === 'queued') {
+                    updateProgress('queued');
+                }
+                
+                if (streamData.market && !marketDone) {
+                    try {
+                        renderMarket(typeof streamData.market === 'string' ? JSON.parse(streamData.market) : streamData.market);
+                        marketDone = true;
+                        updateProgress('market');
+                    } catch (e) {
+                         console.error("Failed to parse market data", e, streamData.market);
+                    }
+                }
+                
+                if (streamData.competitors && !competitorsDone) {
+                    try {
+                        renderCompetitors(typeof streamData.competitors === 'string' ? JSON.parse(streamData.competitors) : streamData.competitors);
+                        competitorsDone = true;
+                        if (marketDone) updateProgress('competitors');
+                    } catch (e) { console.error(e); }
+                }
+                
+                // Usually Viability finishes last or gives us the final step before done
+                if (streamData.viability && !viabilityDone) {
+                    try {
+                        renderViability(typeof streamData.viability === 'string' ? JSON.parse(streamData.viability) : streamData.viability);
+                        viabilityDone = true;
+                        if (competitorsDone) updateProgress('viability');
+                    } catch (e) { console.error(e); }
+                }
+
+                if (streamData.status === 'done' || streamData.status === 'error') {
+                    updateProgress(streamData.status === 'done' ? 'done' : 'queued');
+                    if (streamData.status === 'error') {
+                        document.getElementById('marketContent').innerHTML = `<p class="muted" style="color:var(--danger)">Validation failed. Check server logs.</p>`;
+                    }
+                    eventSource.close();
+                    btn.disabled = false;
+                    btn.textContent = 'Validate Idea';
+                    input.disabled = false;
+                    loadHistory();
+                }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error("EventSource failed:", err);
+                eventSource.close();
+                btn.disabled = false;
+                btn.textContent = 'Validate Idea';
+                input.disabled = false;
+            };
+
+        } catch (err) {
+            console.error("Validation error:", err);
+            btn.disabled = false;
+            btn.textContent = 'Validate Idea';
+            input.disabled = false;
+            alert('Error starting validation: ' + err.message);
+        }
+    }
+
+    function renderMarket(m) {
+        if (!m || m.error) {
+            document.getElementById('marketContent').innerHTML = '<p class="muted" style="color:var(--danger)">Module error occurred.</p>';
+            return;
+        }
+
+        const size = m.market_size || 'N/A';
+        const growth = m.growth_rate || 'N/A';
+        const trends = (m.trend_signals || []).map(t => `<span class="badge">${t}</span>`).join('');
+        const risks = (m.risk_signals || []).map(r => `<span class="badge risk">${r}</span>`).join('');
+        
+        const html = `
+            <div class="data-row">
+                <span class="data-label">Market Size</span>
+                <span class="data-value">${size}</span>
+            </div>
+            <div class="data-row mb-4">
+                <span class="data-label">Growth Rate</span>
+                <span class="data-value" style="color: var(--success);">${growth}</span>
+            </div>
+            
+            <div class="mb-4">
+                <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--muted-text);">Key Trends</h3>
+                <div>${trends || '<span class="muted">None identified</span>'}</div>
+            </div>
+            
+            <div>
+                <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--muted-text);">Risk Signals</h3>
+                <div>${risks || '<span class="muted">None identified</span>'}</div>
+            </div>
+        `;
+        document.getElementById('marketContent').innerHTML = html;
+    }
+
+    function renderCompetitors(c) {
+        if (!c || c.error) {
+            document.getElementById('competitorContent').innerHTML = '<p class="muted" style="color:var(--danger)">Module error occurred.</p>';
+            return;
+        }
+        
+        const direct = c.direct_competitors || [];
+        const gaps = c.market_gaps || [];
+
+        let tableHtml = '<p class="muted">No direct competitors found.</p>';
+        if (direct.length > 0) {
+            tableHtml = `
+                <div style="margin-bottom: 20px; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <table>
+                        <thead>
+                            <tr style="background: rgba(0,0,0,0.2);">
+                                <th>Name</th>
+                                <th>Stage</th>
+                                <th>Weakness</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${direct.map(comp => `
+                                <tr>
+                                    <td style="font-weight: 600;">${comp.name}</td>
+                                    <td><span class="badge" style="margin:0; background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3);">${comp.stage}</span></td>
+                                    <td class="muted" style="font-size: 13px;">${comp.weakness}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        const gapsHtml = `
+            <div>
+                <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--muted-text);">Market Gaps</h3>
+                <ul>
+                    ${gaps.map(g => `<li>${g}</li>`).join('') || '<li class="muted">None identified</li>'}
+                </ul>
+            </div>
+        `;
+
+        document.getElementById('competitorContent').innerHTML = tableHtml + gapsHtml;
+    }
+
+    function getVerdictColor(verdict) {
+        const v = (verdict || '').toUpperCase();
+        if (v.includes('STRONG GO')) return 'var(--success)';
+        if (v.includes('CONDITIONAL')) return 'var(--warning)';
+        if (v.includes('PIVOT')) return 'var(--orange)';
+        if (v.includes('NO GO')) return 'var(--danger)';
+        return 'var(--text-color)';
+    }
+
+    function renderViability(v) {
+        if (!v || v.error) {
+            document.getElementById('viabilityContent').innerHTML = '<p class="muted" style="color:var(--danger)">Module error occurred.</p>';
+            return;
+        }
+
+        const score = v.overall_score || 0;
+        const verdict = v.verdict || 'UNKNOWN';
+        const color = getVerdictColor(verdict);
+        
+        // Add dynamic box shadow formatting for the circle
+        const ringStyle = `border-color: ${color}; color: ${color}; box-shadow: 0 0 20px ${color}40, inset 0 0 20px ${color}20;`;
+        const badgeStyle = `background: ${color}; color: ${color === 'var(--warning)' ? '#000' : '#fff'};`;
+        
+        const html = `
+            <div class="score-container">
+                <div class="score-circle" style="${ringStyle}">
+                    ${score}
+                </div>
+                <div class="verdict-badge" style="${badgeStyle}">
+                    ${verdict}
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+        `;
+        document.getElementById('viabilityContent').innerHTML = html;
+
+        // Render Radar Chart if dimensions exist
+        if (v.dimensions && Object.keys(v.dimensions).length > 0) {
+            const labels = [];
+            const dataScores = [];
+            
+            Object.entries(v.dimensions).forEach(([key, val]) => {
+                labels.push(key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+                dataScores.push(val.score || 0);
+            });
+
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+            
+            // Convert CSS hex/rgb to rgba for chart
+            let rgbColor = color;
+            if (color === 'var(--success)') rgbColor = '34, 197, 94';
+            else if (color === 'var(--warning)') rgbColor = '245, 158, 11';
+            else if (color === 'var(--orange)') rgbColor = '249, 115, 22';
+            else if (color === 'var(--danger)') rgbColor = '239, 68, 68';
+            else rgbColor = '59, 130, 246'; // fallback
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Dimension Score',
+                        data: dataScores,
+                        backgroundColor: `rgba(${rgbColor}, 0.2)`,
+                        borderColor: `rgba(${rgbColor}, 1)`,
+                        pointBackgroundColor: `rgba(${rgbColor}, 1)`,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: `rgba(${rgbColor}, 1)`,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: { display: false, stepSize: 2 },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: { 
+                                color: '#94a3b8', 
+                                font: { size: 11, family: "'Inter', sans-serif", weight: 500 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: "'Inter', sans-serif", size: 13 },
+                            bodyFont: { family: "'Inter', sans-serif", size: 13 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
